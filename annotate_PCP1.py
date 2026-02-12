@@ -7,7 +7,7 @@ import numpy as np
 import matplotlib.cm as cm
 import matplotlib.colors as mcolors
 
-def color_res_by_RMSF(R_avg_path="R_avg.npy"):
+def color_res_by_RMSF(R_avg_path="analysis/R_avg.npy"):
     R_avg = np.load(R_avg_path, allow_pickle=False)
     
     stored.resis = set()
@@ -26,8 +26,8 @@ def color_res_by_RMSF(R_avg_path="R_avg.npy"):
 def show_correlations(
     mindist=10.0,
     minmag=0.5,
-    avg_DCC_path="avg_DCC_matrix.npy",
-    avg_dist_path="avg_dist_matrix.npy",
+    avg_DCC_path="analysis/avg_DCC_matrix.npy",
+    avg_dist_path="analysis/avg_dist_matrix.npy",
     chain="A",
     keep_existing=False,
 ):
