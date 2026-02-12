@@ -14,7 +14,7 @@ temperature = 298.15 * unit.kelvin
 
 pdb = app.PDBFile("5u3h_prepped.pdb")
 #ff = app.ForceField("amber19/protein.ff19SB.xml", "amber19/tip3pfb.xml")
-ff = app.ForceField("protein.ff19SB.xml", "tip3pfb.xml")
+ff = app.ForceField("FFs/protein.ff19SB.xml", "FFs/tip3pfb.xml")
 modeller = app.Modeller(pdb.topology, pdb.positions)
 modeller.addSolvent(
     ff, padding=1.2 * unit.nanometers, model="tip3p", ionicStrength=0.150 * unit.molar, boxShape="dodecahedron"
