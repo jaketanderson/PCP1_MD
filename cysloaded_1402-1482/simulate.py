@@ -4,7 +4,9 @@ import sys
 import openmm
 from openff import toolkit
 from openmm import app, unit
-from openmmforcefields.generators import GAFFTemplateGenerator
+
+from openff.pablo import STD_CCD_CACHE, ResidueDefinition, topology_from_pdb
+from openff.toolkit import ForceField
 
 replicate = int(sys.argv[1])
 print(f"This is replicate #{replicate}.")
@@ -13,13 +15,32 @@ timestep = 2 * unit.femtosecond
 runtime = 10 * unit.nanoseconds
 temperature = 298.15 * unit.kelvin
 
-PPT_cys = toolkit.Molecule.from_file("PPT_cys.mol2")
-gaff = GAFFTemplateGenerator(molecules=PPT_cys)
+serine_resdef = STD_CCD_CACHE["SER"][0]
+cysPPT_resdef = ResidueDefinition.anon_from_smiles("O[P@@](=O)(OCC([C@H](C(=O)NCCC(=O)NCCNC(=O)[C@H](CS)N)O)(C)C)[O-]")
 
-ff = app.ForceField("FFs/protein.ff19SB.xml", "FFs/tip3pfb.xml")
-ff.registerTemplateGenerator(gaff.generator)
-pdb = app.PDBFile("PCP1_PPT_cys.pdb")
-modeller = app.Modeller(pdb.topology, pdb.positions)
+adduct_resdef = ResidueDefinition.react(
+    reactants=[serine_resdef, cysPPT_resdef],
+    reactant_smarts=["[CH2:1][O:2][H:3]",
+                     "[H:4][O:5][P:6]"],
+    product_smarts=[
+        "[C:1][O:2][P:6]", # Phosphorylated serine sidechain
+        "[H:3][O:5][H:4]", # Water
+    ],
+    product_residue_names = ["PPT"],
+    product_linking_bonds = [serine_resdef.linking_bond],
+)[0][0]
+
+topology = topology_from_pdb("PCP1_cysPPT.pdb",
+                            additional_definitions=[adduct_resdef])
+
+ff = ForceField(
+    "openff_no_water-3.0.0-alpha0.offxml",
+    "tip3p_fb.offxml",
+)
+
+interchange = ff.create_interchange(topology)
+
+modeller = app.Modeller(interchange.topology.to_openmm(), interchange.positions.to_openmm())
 modeller.addSolvent(
     ff,
     padding=1.2 * unit.nanometers,
