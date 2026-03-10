@@ -3,7 +3,7 @@ set -euo pipefail
 
 suffix="$(date +'%Y-%m-%d_%H-%M-%S')"
 
-mkdir /workspace/bookkeeping
+mkdir -p /workspace/bookkeeping
 
 # Make copies of important files/data for bookkeeping
 cp simulate.py "/workspace/bookkeeping/simulate.py_$suffix"

@@ -55,11 +55,12 @@ with open(f"/workspace/{replicate}/system.xml", "w") as f:
 integrator = openmm.LangevinMiddleIntegrator(temperature, 1 / unit.picosecond, timestep)
 # Use the int `replicate` as the random number seed
 integrator.setRandomNumberSeed(replicate)
-# platform = openmm.Platform.getPlatformByName("CUDA")
+platform = openmm.Platform.getPlatformByName("CUDA")
 print("CUDA_VISIBLE_DEVICES:", os.environ.get("CUDA_VISIBLE_DEVICES"))
 properties = {"Precision": "mixed"}
-# simulation = app.Simulation(modeller.topology, system, integrator, platform, properties)
-simulation = app.Simulation(interchange.topology.to_openmm(), system, integrator)
+simulation = app.Simulation(
+    interchange.topology.to_openmm(), system, integrator, platform, properties
+)
 
 simulation.context.setPositions(
     [

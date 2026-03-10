@@ -6,18 +6,22 @@ from openmm import app, unit
 
 replicate = int(sys.argv[1])
 print(f"This is replicate #{replicate}.")
-#os.makedirs(str(replicate), exist_ok=True)
+# os.makedirs(str(replicate), exist_ok=True)
 
 timestep = 2 * unit.femtosecond
 runtime = 10 * unit.nanoseconds
 temperature = 298.15 * unit.kelvin
 
 pdb = app.PDBFile("5u3h_prepped.pdb")
-#ff = app.ForceField("amber19/protein.ff19SB.xml", "amber19/tip3pfb.xml")
+# ff = app.ForceField("amber19/protein.ff19SB.xml", "amber19/tip3pfb.xml")
 ff = app.ForceField("FFs/protein.ff19SB.xml", "FFs/tip3pfb.xml")
 modeller = app.Modeller(pdb.topology, pdb.positions)
 modeller.addSolvent(
-    ff, padding=1.2 * unit.nanometers, model="tip3p", ionicStrength=0.150 * unit.molar, boxShape="dodecahedron"
+    ff,
+    padding=1.2 * unit.nanometers,
+    model="tip3p",
+    ionicStrength=0.150 * unit.molar,
+    boxShape="dodecahedron",
 )
 modeller.addExtraParticles(ff)
 # print(modelddler.topology.getPeriodicBoxVectors())
@@ -46,7 +50,9 @@ simulation.context.setPositions(modeller.positions)
 print("Minimizing energy...")
 simulation.minimizeEnergy(tolerance=5.5 * unit.kilojoules_per_mole / unit.nanometer)
 positions = simulation.context.getState(positions=True).getPositions()
-app.PDBFile.writeFile(simulation.topology, positions, open(f"/workspace/{replicate}/minimized.pdb", "w"))
+app.PDBFile.writeFile(
+    simulation.topology, positions, open(f"/workspace/{replicate}/minimized.pdb", "w")
+)
 simulation.saveState(f"/workspace/{replicate}/minimized_state.xml")
 
 print("Simulating production...")
@@ -89,7 +95,9 @@ simulation.reporters.append(
 )
 
 simulation.reporters.append(
-    app.CheckpointReporter(f"/workspace/{replicate}/checkpoint.chk", int(10 * unit.nanoseconds / timestep))
+    app.CheckpointReporter(
+        f"/workspace/{replicate}/checkpoint.chk", int(10 * unit.nanoseconds / timestep)
+    )
 )
 
 simulation.step(int(runtime / timestep))
