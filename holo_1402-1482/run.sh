@@ -2,8 +2,8 @@
 set -euo pipefail
 
 suffix="$(date +'%Y-%m-%d_%H-%M-%S')"
-
-mkdir /workspace/bookkeeping
+ 
+mkdir -p /workspace/bookkeeping
 
 # Make copies of important files/data for bookkeeping
 cp simulate.py "/workspace/bookkeeping/simulate.py_$suffix"
@@ -19,7 +19,7 @@ run_one () {
 }
 
 pids=()
-for gpu in 0 1 2 3 4 5; do
+for gpu in 0 1 2; do
   mkdir -p "/workspace/$gpu"
   run_one "$gpu" >"/workspace/${gpu}/out.txt" 2>"/workspace/${gpu}/err.txt" &
   pids+=("$!")
@@ -39,7 +39,7 @@ if (( rc != 0 )); then
 fi
 
 # Tar up all the results, including intermediate files
-tar -I 'pigz -p 6' -cvf results.tar.gz /workspace/0/ /workspace/1/ /workspace/2/ /workspace/3/ /workspace/4/ /workspace/5/ /workspace/bookkeeping/ 
+tar -I 'pigz -p 6' -cvf results.tar.gz /workspace/0/ /workspace/1/ /workspace/2/ /workspace/bookkeeping/ 
 
 echo "Done!"
 echo "End datetime: $(date +'%Y-%m-%d_%H-%M-%S')"

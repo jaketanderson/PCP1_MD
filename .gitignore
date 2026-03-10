@@ -1,3 +1,4 @@
 **/.ipynb_checkpoints/
 **/workspace/
-**/results_*.tar.gz
+**/results*.tar.gz
+**/openff-pablo/

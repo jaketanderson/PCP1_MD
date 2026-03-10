@@ -31,7 +31,7 @@ system = ff.createSystem(
     rigidWater=True,
 )
 
-with open(f"{replicate}/system.xml", "w") as f:
+with open(f"/workspace/{replicate}/system.xml", "w") as f:
     f.write(openmm.XmlSerializer.serialize(system))
 
 integrator = openmm.LangevinMiddleIntegrator(temperature, 1 / unit.picosecond, timestep)
@@ -46,13 +46,13 @@ simulation.context.setPositions(modeller.positions)
 print("Minimizing energy...")
 simulation.minimizeEnergy(tolerance=5.5 * unit.kilojoules_per_mole / unit.nanometer)
 positions = simulation.context.getState(positions=True).getPositions()
-app.PDBFile.writeFile(simulation.topology, positions, open(f"{replicate}/minimized.pdb", "w"))
-simulation.saveState(f"{replicate}/minimized_state.xml")
+app.PDBFile.writeFile(simulation.topology, positions, open(f"/workspace/{replicate}/minimized.pdb", "w"))
+simulation.saveState(f"/workspace/{replicate}/minimized_state.xml")
 
 print("Simulating production...")
 simulation.reporters.append(
     app.StateDataReporter(
-        f"{replicate}/production.log",
+        f"/workspace/{replicate}/production.log",
         reportInterval=int(20 * unit.picosecond / timestep),
         step=True,
         time=True,
@@ -82,14 +82,14 @@ simulation.reporters.append(
 
 simulation.reporters.append(
     app.DCDReporter(
-        f"{replicate}/production.dcd",
+        f"/workspace/{replicate}/production.dcd",
         reportInterval=int(20 * unit.picosecond / timestep),
         enforcePeriodicBox=True,
     )
 )
 
 simulation.reporters.append(
-    app.CheckpointReporter(f"{replicate}/checkpoint.chk", int(10 * unit.nanoseconds / timestep))
+    app.CheckpointReporter(f"/workspace/{replicate}/checkpoint.chk", int(10 * unit.nanoseconds / timestep))
 )
 
 simulation.step(int(runtime / timestep))
