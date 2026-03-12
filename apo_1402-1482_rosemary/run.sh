@@ -19,7 +19,7 @@ run_one () {
 }
 
 pids=()
-for gpu in 0 1 2; do
+for gpu in $(seq 0 $1); do
   mkdir "workspace/$gpu"
   run_one "$gpu" >"workspace/${gpu}/out.txt" 2>"workspace/${gpu}/err.txt" &
   pids+=("$!")
