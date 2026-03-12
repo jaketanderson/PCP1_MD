@@ -2,3 +2,5 @@
 **/workspace/
 **/results*.tar.gz
 **/openff-pablo/
+*.npy
+**/*.npy
