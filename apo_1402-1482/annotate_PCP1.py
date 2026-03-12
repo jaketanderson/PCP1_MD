@@ -36,6 +36,11 @@ def show_correlations(
     avg_DCC_matrix = np.load(avg_DCC_path, allow_pickle=False)
     avg_dist_matrix = np.load(avg_dist_path, allow_pickle=False)
 
+    # Build mapping from matrix index to actual PDB residue ID
+    stored.resis = set()
+    cmd.iterate(f"chain {chain} and name CA", "stored.resis.add(int(resi))")
+    resids = sorted(stored.resis)
+
     filtered_DCC_matrix = np.where(avg_dist_matrix >= mindist, avg_DCC_matrix, np.nan)
     i_s, j_s = np.where(np.abs(filtered_DCC_matrix) >= minmag)
 
@@ -49,20 +54,22 @@ def show_correlations(
         if np.isnan(val):
             continue
 
-        sel1 = f"chain {chain} and resi {i+1} and name CA"
-        sel2 = f"chain {chain} and resi {j+1} and name CA"
+        resi_i = resids[i]
+        resi_j = resids[j]
+        sel1 = f"chain {chain} and resi {resi_i} and name CA"
+        sel2 = f"chain {chain} and resi {resi_j} and name CA"
 
         # Skip if selections don't resolve to exactly one atom each
         if cmd.count_atoms(sel1) != 1 or cmd.count_atoms(sel2) != 1:
             continue
 
-        distname = f"dist_{i+1}_{j+1}"
+        distname = f"dist_{resi_i}_{resi_j}"
         cmd.distance(distname, sel1, sel2)
 
         # --- robust RGB coloring: define a named PyMOL color ---
         r, g, b, _ = cm.bwr(norm(val))
         rgb = [float(r), float(g), float(b)]
-        color_name = f"col_{i+1}_{j+1}"
+        color_name = f"col_{resi_i}_{resi_j}"
         cmd.set_color(color_name, rgb)
         cmd.set("dash_color", color_name, distname)
         cmd.set("dash_width", 4, distname)
@@ -74,7 +81,7 @@ def show_correlations(
         c2 = cmd.get_atom_coords(sel2)
         mid = [(c1[k] + c2[k]) / 2.0 for k in range(3)]
 
-        lab_obj = f"lab_{i+1}_{j+1}"
+        lab_obj = f"lab_{resi_i}_{resi_j}"
         cmd.pseudoatom(lab_obj, pos=mid)
         cmd.label(lab_obj, f'"{val:+.2f}"')  # fully custom text
         cmd.set("label_color", color_name, lab_obj)

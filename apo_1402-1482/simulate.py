@@ -40,15 +40,14 @@ integrator.setRandomNumberSeed(replicate)
 platform = openmm.Platform.getPlatformByName("CUDA")
 print("CUDA_VISIBLE_DEVICES:", os.environ.get("CUDA_VISIBLE_DEVICES"))
 properties = {"Precision": "mixed"}
-#simulation = app.Simulation(modeller.topology, system, integrator, platform, properties)
+simulation = app.Simulation(modeller.topology, system, integrator, platform, properties)
 
 simulation.context.setPositions(modeller.positions)
 print("Minimizing energy...")
 simulation.minimizeEnergy(tolerance=2.5 * unit.kilojoules_per_mole / unit.nanometer)
 positions = simulation.context.getState(positions=True).getPositions()
-app.PDBFile.writeFile(
-    simulation.topology, positions, open(f"workspace/{replicate}/minimized.pdb", "w")
-)
+with open(f"workspace/{replicate}/minimized.pdb", "w") as f:
+    app.PDBFile.writeFile(simulation.topology, positions, f)
 simulation.saveState(f"workspace/{replicate}/minimized_state.xml")
 
 print("Simulating production...")

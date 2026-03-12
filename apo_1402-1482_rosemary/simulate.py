@@ -30,7 +30,7 @@ print("Creating system...")
 
 interchange["vdW"].cutoff = 1.0 * openff_unit.nanometer
 interchange["Electrostatics"].cutoff = 1.0 * openff_unit.nanometer
-system = interchange.to_openmm_system(hydrogen_mass=3.024)
+system = interchange.to_openmm_system()
 
 with open(f"workspace/{replicate}/system.xml", "w") as f:
     f.write(openmm.XmlSerializer.serialize(system))
@@ -55,11 +55,8 @@ simulation.context.setPositions(to_openmm_positions(interchange))
 print("Minimizing energy...")
 simulation.minimizeEnergy(tolerance=2.5 * unit.kilojoules_per_mole / unit.nanometer)
 positions = simulation.context.getState(positions=True).getPositions()
-app.PDBFile.writeFile(
-    simulation.topology,
-    positions,
-    open(f"workspace/{replicate}/minimized.pdb", "w"),
-)
+with open(f"workspace/{replicate}/minimized.pdb", "w") as f:
+    app.PDBFile.writeFile(simulation.topology, positions, f)
 simulation.saveState(f"workspace/{replicate}/minimized_state.xml")
 
 print("Simulating production...")

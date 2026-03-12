@@ -8,8 +8,6 @@ mkdir -p workspace/bookkeeping
 # Make copies of important files/data for bookkeeping
 cp simulate.py "workspace/bookkeeping/simulate.py_$suffix"
 cp run.sh "workspace/bookkeeping/run.sh_$suffix"
-cp protein.ff19SB.xml "workspace/bookkeeping/protein.ff19SB.xml_$suffix"
-cp tip3pfb.xml "workspace/bookkeeping/tip3pfb.xml_$suffix"
 nvidia-smi > "workspace/bookkeeping/nvidia-smi.txt_$suffix"
 conda list > "workspace/bookkeeping/conda_list.txt_$suffix"
 python -m openmm.testInstallation > "workspace/bookkeeping/testInstallation.txt_$suffix"
