@@ -1,6 +1,5 @@
 **/.ipynb_checkpoints/
 **/workspace/
-**/results*.tar.gz
-**/openff-pablo/
+**/*.tar.gz
 *.npy
 **/*.npy

@@ -1,0 +1,3 @@
+[submodule "openff-pablo"]
+	path = openff-pablo
+	url = https://github.com/openforcefield/openff-pablo.git
