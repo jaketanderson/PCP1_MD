@@ -6,25 +6,22 @@ from openmm import app, unit
 
 replicate = int(sys.argv[1])
 print(f"This is replicate #{replicate}.")
-# os.makedirs(str(replicate), exist_ok=True)
 
 timestep = 2 * unit.femtosecond
 runtime = 1050 * unit.nanoseconds
 temperature = 298.15 * unit.kelvin
 
 pdb = app.PDBFile("5u3h_prepped.pdb")
-# ff = app.ForceField("amber19/protein.ff19SB.xml", "amber19/tip3pfb.xml")
-ff = app.ForceField("FFs/protein.ff19SB.xml", "FFs/tip3pfb.xml")
+ff = app.ForceField("amber14/protein.ff14SB.xml", "amber/opc_standard.xml")
 modeller = app.Modeller(pdb.topology, pdb.positions)
+modeller.addExtraParticles(ff)
 modeller.addSolvent(
     ff,
     padding=1.2 * unit.nanometers,
-    model="tip3p",
+    model="tip4pew",
     ionicStrength=0.150 * unit.molar,
     boxShape="dodecahedron",
 )
-modeller.addExtraParticles(ff)
-# print(modelddler.topology.getPeriodicBoxVectors())
 
 print("Creating system...")
 system = ff.createSystem(
@@ -32,7 +29,6 @@ system = ff.createSystem(
     nonbondedMethod=app.PME,
     nonbondedCutoff=1 * unit.nanometer,
     constraints=app.HBonds,
-    rigidWater=True,
 )
 
 with open(f"workspace/{replicate}/system.xml", "w") as f:
@@ -44,11 +40,11 @@ integrator.setRandomNumberSeed(replicate)
 platform = openmm.Platform.getPlatformByName("CUDA")
 print("CUDA_VISIBLE_DEVICES:", os.environ.get("CUDA_VISIBLE_DEVICES"))
 properties = {"Precision": "mixed"}
-simulation = app.Simulation(modeller.topology, system, integrator, platform, properties)
+#simulation = app.Simulation(modeller.topology, system, integrator, platform, properties)
 
 simulation.context.setPositions(modeller.positions)
 print("Minimizing energy...")
-simulation.minimizeEnergy(tolerance=5.5 * unit.kilojoules_per_mole / unit.nanometer)
+simulation.minimizeEnergy(tolerance=2.5 * unit.kilojoules_per_mole / unit.nanometer)
 positions = simulation.context.getState(positions=True).getPositions()
 app.PDBFile.writeFile(
     simulation.topology, positions, open(f"workspace/{replicate}/minimized.pdb", "w")

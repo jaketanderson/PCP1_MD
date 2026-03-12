@@ -8,6 +8,7 @@ from openmm import app, unit
 
 from openff.pablo import STD_CCD_CACHE, ResidueDefinition, topology_from_pdb
 from openff.toolkit import ForceField
+from openff.interchange.interop.openmm import to_openmm_positions
 
 replicate = int(sys.argv[1])
 print(f"This is replicate #{replicate}.")
@@ -20,7 +21,7 @@ topology = topology_from_pdb("PCP1_solvated.pdb")
 
 ff = ForceField(
     "openff_no_water-3.0.0-alpha0.offxml",
-    "tip3p_fb.offxml",
+    "opc-1.0.2.offxml",
 )
 
 interchange = ff.create_interchange(topology)
@@ -40,22 +41,24 @@ integrator.setRandomNumberSeed(replicate)
 platform = openmm.Platform.getPlatformByName("CUDA")
 print("CUDA_VISIBLE_DEVICES:", os.environ.get("CUDA_VISIBLE_DEVICES"))
 properties = {"Precision": "mixed"}
+
 simulation = app.Simulation(
-    interchange.topology.to_openmm(), system, integrator, platform, properties
+    interchange.to_openmm_topology(),
+    system,
+    integrator,
+    platform,
+    properties,
 )
 
-simulation.context.setPositions(
-    [
-        openmm.Vec3(float(x), float(y), float(z))
-        for x, y, z in interchange.positions.m_as(openff_unit.nanometer)
-    ]
-    * unit.nanometer
-)
+simulation.context.setPositions(to_openmm_positions(interchange))
+
 print("Minimizing energy...")
-simulation.minimizeEnergy(tolerance=5.5 * unit.kilojoules_per_mole / unit.nanometer)
+simulation.minimizeEnergy(tolerance=2.5 * unit.kilojoules_per_mole / unit.nanometer)
 positions = simulation.context.getState(positions=True).getPositions()
 app.PDBFile.writeFile(
-    simulation.topology, positions, open(f"workspace/{replicate}/minimized.pdb", "w")
+    simulation.topology,
+    positions,
+    open(f"workspace/{replicate}/minimized.pdb", "w"),
 )
 simulation.saveState(f"workspace/{replicate}/minimized_state.xml")
 
